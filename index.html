@@ -1,0 +1,212 @@
+<style>
+body, html {
+  height: 100%;
+  background-color: lightblue;
+}
+
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
+
+.title{
+  text-align: center;
+  font-size: 20px;
+  margin-top: 5%;
+  margin-bottom: 0px;
+  font-family: Helvetica;
+}
+
+.subtitle {
+  text-align: center;
+  font-family: Helvetica;
+  font-style: italic;
+  font-size: 15px;
+  margin: 0px 0px;
+  color: darkblue;
+}
+
+.container{
+  text-align: center;
+  font-family: Helvetica;
+  font-size: 20px;
+}
+
+.frontimg{
+  height: 30%;
+}
+
+.backimg{
+  height: 30%;
+}
+
+.baseExperience {
+  font-style: italic;
+  font-size: 20px;
+  margin: 10px 0px;
+}
+
+.height{
+  font-style: italic;
+  font-size: 20px;
+  margin: 10px 0px;
+}
+
+.weight{
+  font-style: italic;
+  font-size: 20px;
+  margin: 10px 0px;
+}
+
+.type {
+	font-weight: bold;
+	margin: 10px 0px;
+}
+
+.moves {
+	font-style: italic;
+	margin: 10px 0px;
+}
+
+.collapsible {
+  background-color: lightblue;
+  color: black;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: center;
+  outline: none;
+  font-size: 20px;
+  font-family: Helvetica;
+}
+
+.active, .collapsible:hover {
+  background-color: lightgreen;
+}
+
+.content {
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+  background-color: white;
+}
+
+</style>
+<html>
+<head>
+</head>
+
+<div class = "bg"></div>
+
+<script>	
+
+
+function myFunction() {
+    var x = document.getElementById("myDIV");
+    if (x.style.display === "none") {
+    	x.style.display = "block";
+    } else {
+     	x.style.display = "none";
+    }
+}
+window.onload = function(){
+	var url = 'https://pokeapi.co/api/v2/pokemon'
+	var nolimit = 'https://pokeapi.co/api/v2/pokemon/?limit=150&offset=0'
+	var firstPromise = new Promise(function(){
+    var req = new XMLHttpRequest()
+    req.open('GET', nolimit, true)
+
+    req.onload = () => {
+    	// no server errors from the pokeapi
+      		if (req.readyState==4 && req.status==200) {
+        		data = JSON.parse(req.responseText);
+        		data.results.forEach(function(item) { //For loop
+          			var secondPromise = new Promise(function(){
+              			var req2 = new XMLHttpRequest()
+              			var pokemonName = item.name.charAt(0).toUpperCase() + item.name.slice(1); //Capitalize name
+              			var pokemonLink = url+"/"+item.name
+              			req2.open('GET', pokemonLink, true)
+
+              			req2.onload = () => {
+                			if (req.readyState==4 && req.status==200) {
+                  				moreData = JSON.parse(req2.responseText);
+                  				var poke = document.getElementById("container");
+                  				var pokemonFront = moreData.sprites.front_default; //Image
+                  				var pokemonBack = moreData.sprites.back_default;  //Image
+                  				var pokemonFrontShiny = moreData.sprites.front_shiny; //Image
+                  				var pokemonBackShiny = moreData.sprites.back_shiny; //Image
+                  				var pokemonBaseEx = moreData.base_experience; //Image
+                  				var pokemonHeight = moreData.height; //Height
+                  				var pokemonWeight = moreData.weight; //Weight
+                  				var types = moreData.types; //Type of Pokemon
+                  				var pokemonType = 'Unlisted';
+                  				if (types.length==2) {
+                  					pokemonType = types[1].type.name.charAt(0).toUpperCase() + types[1].type.name.slice(1);
+                  				}
+                  				var moves = moreData.moves; //Example Moves for Pokemon
+                  				var pokemonMoves = moves[0].move.name;
+                  				if (moves.length < 4) {
+                  					for(i=1; i < moves.length; i++) {
+                  						pokemonMoves = pokemonMoves + ', ' + moves[i].move.name;
+                  					}
+                  				} else {
+                  					for(i=1; i < 4; i++) {
+                  						pokemonMoves = pokemonMoves + ', ' + moves[i].move.name;
+                  					}
+                  				}
+                  				poke.innerHTML +=
+				                
+				                `
+				                <button class="name collapsible" onclick="collapse()">${pokemonName} </button>
+
+				                <div class="myPokemon content">
+				                    <img src="${pokemonFront}" class="frontimg">
+				                    <img src="${pokemonBack}" class= "backimg">
+				                    <img src="${pokemonFrontShiny}" class="frontimg">
+				                    <img src="${pokemonBackShiny}" class= "backimg">
+				                   	<p class="type">Type: ${pokemonType}
+				                   	<p class="baseExperience">Base Experience: ${pokemonBaseEx}
+				                    <p class="height">Height: ${pokemonHeight}
+				                    <p class="weight">Weight: ${pokemonWeight}
+				                    <p class="moves">Example Moves: ${pokemonMoves}
+				                </div>
+				                `
+                  				}
+             				};
+              			req2.send();
+           	 		});
+       			})
+      		}
+    	};
+    req.send();
+});
+}
+
+function collapse() {
+	var coll = document.getElementsByClassName("collapsible");
+	for (x = 0; x < coll.length; x++) {
+  		coll[x].addEventListener("click", function() {
+    		this.classList.toggle("active");
+    		var content = this.nextElementSibling;
+    		if (content.style.display == "block") {
+      			content.style.display = "none";
+    		} else {
+      			content.style.display = "block";
+    		}
+  		});
+	}
+}
+
+</script>
+
+<body>
+	<img src="pokemon.png" class="center"></img>
+	<p class="subtitle">Swathi Balakrishnan, Carrie Mittl, Liya Wu</p>
+	<h3 class="title">Use this website to learn more about Pokemon. Double click on a Pokemon to get started!</h3>
+	<p class="subtitle">**Please note that the website takes a few seconds to load so please be patient</p>
+	<div id="container" class="container"></div>
+</body>
+</html> 
